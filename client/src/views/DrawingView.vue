@@ -1,5 +1,7 @@
 <template>
     <div>
+        <input type="range" v-model="brushSize" min="1" max="20">
+
       <canvas
         ref="canvas"
         :width="canvasWidth"
@@ -21,14 +23,15 @@
         isDrawing: false,
         canvasWidth: 400,
         canvasHeight: 400,
+        brushSize: 24, // Initial brush size
       };
     },
     mounted() {
-      this.canvas = this.$refs.canvas;
-      this.ctx = this.canvas.getContext('2d');
-      this.ctx.lineWidth = 2;
-      this.ctx.lineJoin = 'round';
-      this.ctx.lineCap = 'round';
+        this.canvas = this.$refs.canvas;
+        this.ctx = this.canvas.getContext('2d');
+        this.ctx.lineWidth = this.brushSize;
+        this.ctx.lineJoin = 'round';
+        this.ctx.lineCap = 'round';
     },
     methods: {
       startDrawing(event) {
