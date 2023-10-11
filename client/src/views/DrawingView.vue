@@ -1,74 +1,100 @@
 <template>
     <div>
-        <input type="range" v-model="brushSize" min="1" max="20">
-
-        <canvas ref="canvas" :width="canvasWidth" :height="canvasHeight" @mousedown="startDrawing" @mousemove="draw"
-            @mouseup="stopDrawing" @touchstart="startDrawing" @touchmove="draw" @touchend="stopDrawing"></canvas>
+      <canvas ref="canvas" @mousedown="startDrawing" @mousemove="draw" @mouseup="stopDrawing" @mouseleave="stopDrawing"></canvas>
+      <div>
+        <button @click="clearCanvas">Clear</button>
+        <button @click="saveDrawing">Save</button>
+        <button @click="redrawDrawing">Redraw</button>
+      </div>
+      <div>
+        <button @click="newDrawing">New Drawing</button>
+        <label>Save Location:
+          <select v-model="selectedSaveLocation">
+            <option v-for="(location, index) in saveLocations" :value="index" :key="index">
+              {{ location.name }}
+            </option>
+          </select>
+        </label>
+      </div>
     </div>
-</template>
+  </template>
   
-<script>
-export default {
+  <script>
+  export default {
     data() {
-        return {
-            isDrawing: false,
-            canvasWidth: 400,
-            canvasHeight: 400,
-            brushSize: 24, // Initial brush size
-        };
-    },
-    watch: {
-        brushSize(newSize) {
-            this.ctx.lineWidth = newSize;
-        },
+      return {
+        drawing: false,
+        lastX: 0,
+        lastY: 0,
+        ctx: null,
+        savedDrawing: null,
+        saveLocations: [], // Array to store saved drawings
+        selectedSaveLocation: null, // Currently selected save location
+      };
     },
     mounted() {
-        this.canvas = this.$refs.canvas;
-        this.ctx = this.canvas.getContext('2d');
-        this.ctx.lineWidth = this.brushSize;
-        this.ctx.lineJoin = 'round';
-        this.ctx.lineCap = 'round';
+      this.ctx = this.$refs.canvas.getContext('2d');
     },
     methods: {
-        startDrawing(event) {
-            this.isDrawing = true;
-            const [x, y] = this.getMousePosition(event);
-            this.ctx.beginPath();
-            this.ctx.moveTo(x, y);
-        },
-        draw(event) {
-            if (!this.isDrawing) return;
-            const [x, y] = this.getMousePosition(event);
-            this.ctx.lineTo(x, y);
-            this.ctx.stroke();
-        },
-        stopDrawing() {
-            this.isDrawing = false;
-        },
-        getMousePosition(event) {
-            const rect = this.canvas.getBoundingClientRect();
-            const touch = event.touches ? event.touches[0] : event;
-            return [touch.clientX - rect.left, touch.clientY - rect.top];
-        },
-    },
-};
-</script>
+      startDrawing(event) {
+        this.drawing = true;
+        this.lastX = event.offsetX;
+        this.lastY = event.offsetY;
+      },
+      draw(event) {
+        if (!this.drawing) return;
+        this.ctx.strokeStyle = 'black';
+        this.ctx.lineWidth = 2;
+        this.ctx.lineJoin = 'round';
+        this.ctx.lineCap = 'round';
   
-<style scoped>
-canvas {
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.lastX, this.lastY);
+        this.ctx.lineTo(event.offsetX, event.offsetY);
+        this.ctx.stroke();
+  
+        this.lastX = event.offsetX;
+        this.lastY = event.offsetY;
+      },
+      stopDrawing() {
+        this.drawing = false;
+      },
+      clearCanvas() {
+        this.ctx.clearRect(0, 0, this.$refs.canvas.width, this.$refs.canvas.height);
+      },
+      saveDrawing() {
+        const image = this.$refs.canvas.toDataURL();
+        if (this.selectedSaveLocation !== null) {
+          this.saveLocations[this.selectedSaveLocation].drawing = image;
+        } else {
+          this.saveLocations.push({ name: 'New Location', drawing: image });
+          this.selectedSaveLocation = this.saveLocations.length - 1;
+        }
+      },
+      redrawDrawing() {
+        if (this.selectedSaveLocation !== null) {
+          const savedImage = this.saveLocations[this.selectedSaveLocation].drawing;
+          if (savedImage) {
+            const img = new Image();
+            img.src = savedImage;
+            img.onload = () => {
+              this.ctx.clearRect(0, 0, this.$refs.canvas.width, this.$refs.canvas.height);
+              this.ctx.drawImage(img, 0, 0);
+            };
+          }
+        }
+      },
+      newDrawing() {
+        this.selectedSaveLocation = null;
+        this.clearCanvas();
+      },
+    },
+  };
+  </script>
+  
+  <style scoped>
+  canvas {
     border: 1px solid #000;
-    touch-action: none;
-    /* Prevent scrolling while drawing on mobile */
-
-    /* Center the canvas */
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-
-    /* Add a drop shadow */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-
-    /* Add a border radius */
-    border-radius: 3px;
-}
-</style>
+  }
+  </style>
+  
