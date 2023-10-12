@@ -46,6 +46,7 @@ export default {
       selectedSaveLocation: null,
       canvasWidth: 800, // Initial canvas width
       canvasHeight: 600, // Initial canvas height
+      touchPoints: [], // Array to store touch points for interpolation
     };
   },
   mounted() {
@@ -85,32 +86,23 @@ export default {
       this.lastY =
         (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) *
         scaleY;
+      // Clear the array of touch points for the new stroke
+      this.touchPoints = [];
     },
     drawTouch(event, scaleX, scaleY) {
       // Handle touch move event
       event.preventDefault();
       if (!this.drawing) return;
       const touch = event.touches[0];
-      this.ctx.strokeStyle = "black";
-      this.ctx.lineWidth = 40;
-      this.ctx.lineJoin = "round";
-      this.ctx.lineCap = "round";
-
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.lastX, this.lastY);
-      this.ctx.lineTo(
-        (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) *
-          scaleX,
-        (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY
-      );
-      this.ctx.stroke();
-
-      this.lastX =
+      const x =
         (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) *
         scaleX;
-      this.lastY =
+      const y =
         (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) *
         scaleY;
+      // Push the current touch point into the array
+      this.touchPoints.push({ x, y });
+      this.drawInterpolatedLine(this.touchPoints);
     },
     draw(event) {
       if (!this.drawing) return;
@@ -126,6 +118,33 @@ export default {
 
       this.lastX = event.offsetX;
       this.lastY = event.offsetY;
+    },
+    drawInterpolatedLine(points) {
+      if (points.length < 2) return; // Not enough points for interpolation
+
+      this.ctx.strokeStyle = "black";
+      this.ctx.lineWidth = 40;
+      this.ctx.lineJoin = "round";
+      this.ctx.lineCap = "round";
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(points[0].x, points[0].y);
+
+      for (let i = 1; i < points.length; i++) {
+        const x1 = points[i - 1].x;
+        const y1 = points[i - 1].y;
+        const x2 = points[i].x;
+        const y2 = points[i].y;
+
+        // Interpolate points between two consecutive points for a smoother line
+        for (let j = 0; j < 1; j += 0.1) {
+          const x = x1 + (x2 - x1) * j;
+          const y = y1 + (y2 - y1) * j;
+          this.ctx.lineTo(x, y);
+        }
+      }
+
+      this.ctx.stroke();
     },
     stopDrawing() {
       this.drawing = false;
