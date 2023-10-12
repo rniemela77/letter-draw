@@ -1,130 +1,157 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-pwa"
-          target="_blank"
-          rel="noopener"
-          >pwa</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router"
-          target="_blank"
-          rel="noopener"
-          >router</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
+  <div>
+    <canvas
+      ref="canvas"
+      @mousedown="startDrawing"
+      @mousemove="draw"
+      @mouseup="stopDrawing"
+      @mouseleave="stopDrawing"
+      @touchstart="startDrawingTouch"
+      @touchmove="drawTouch"
+      @touchend="stopDrawing"
+    ></canvas>
+    <div>
+      <button @click="clearCanvas">Clear</button>
+      <button @click="saveDrawing">Save</button>
+      <button @click="redrawDrawing">Redraw</button>
+    </div>
+    <div>
+      <button @click="newDrawing">New Drawing</button>
+      <label
+        >Save Location:
+        <select v-model="selectedSaveLocation">
+          <option
+            v-for="(location, index) in saveLocations"
+            :value="index"
+            :key="index"
+          >
+            {{ location.name }}
+          </option>
+        </select>
+      </label>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "HelloWorld",
-  props: {
-    msg: String,
+  data() {
+    return {
+      drawing: false,
+      lastX: 0,
+      lastY: 0,
+      ctx: null,
+      savedDrawing: null,
+      saveLocations: [], // Array to store saved drawings
+      selectedSaveLocation: null, // Currently selected save location
+    };
+  },
+  mounted() {
+    this.ctx = this.$refs.canvas.getContext("2d");
+  },
+  methods: {
+    startDrawing(event) {
+      this.drawing = true;
+      this.lastX = event.offsetX;
+      this.lastY = event.offsetY;
+    },
+    startDrawingTouch(event) {
+      // Handle touch start event
+      event.preventDefault();
+      const touch = event.touches[0];
+      this.drawing = true;
+      this.lastX =
+        touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
+      this.lastY =
+        touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+    },
+    drawTouch(event) {
+      // Handle touch move event
+      event.preventDefault();
+      if (!this.drawing) return;
+      const touch = event.touches[0];
+      this.ctx.strokeStyle = "black";
+      this.ctx.lineWidth = 40;
+      this.ctx.lineJoin = "round";
+      this.ctx.lineCap = "round";
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.lineTo(
+        touch.clientX - this.$refs.canvas.getBoundingClientRect().left,
+        touch.clientY - this.$refs.canvas.getBoundingClientRect().top
+      );
+      this.ctx.stroke();
+
+      this.lastX =
+        touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
+      this.lastY =
+        touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+    },
+    draw(event) {
+      if (!this.drawing) return;
+      this.ctx.strokeStyle = "black";
+      this.ctx.lineWidth = 40;
+      this.ctx.lineJoin = "round";
+      this.ctx.lineCap = "round";
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.lineTo(event.offsetX, event.offsetY);
+      this.ctx.stroke();
+
+      this.lastX = event.offsetX;
+      this.lastY = event.offsetY;
+    },
+    stopDrawing() {
+      this.drawing = false;
+    },
+    clearCanvas() {
+      this.ctx.clearRect(
+        0,
+        0,
+        this.$refs.canvas.width,
+        this.$refs.canvas.height
+      );
+    },
+    saveDrawing() {
+      const image = this.$refs.canvas.toDataURL();
+      if (this.selectedSaveLocation !== null) {
+        this.saveLocations[this.selectedSaveLocation].drawing = image;
+      } else {
+        this.saveLocations.push({ name: "New Location", drawing: image });
+        this.selectedSaveLocation = this.saveLocations.length - 1;
+      }
+    },
+    redrawDrawing() {
+      if (this.selectedSaveLocation !== null) {
+        const savedImage =
+          this.saveLocations[this.selectedSaveLocation].drawing;
+        if (savedImage) {
+          const img = new Image();
+          img.src = savedImage;
+          img.onload = () => {
+            this.ctx.clearRect(
+              0,
+              0,
+              this.$refs.canvas.width,
+              this.$refs.canvas.height
+            );
+            this.ctx.drawImage(img, 0, 0);
+          };
+        }
+      }
+    },
+    newDrawing() {
+      this.selectedSaveLocation = null;
+      this.clearCanvas();
+    },
   },
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+canvas {
+  background: rgb(109, 100, 100);
 }
 </style>
