@@ -62,8 +62,12 @@ export default {
       const scaleX = this.$refs.canvas.width / this.$refs.canvas.offsetWidth;
       const scaleY = this.$refs.canvas.height / this.$refs.canvas.offsetHeight;
 
-      this.$refs.canvas.addEventListener("touchstart", (event) => this.startDrawingTouch(event, scaleX, scaleY));
-      this.$refs.canvas.addEventListener("touchmove", (event) => this.drawTouch(event, scaleX, scaleY));
+      this.$refs.canvas.addEventListener("touchstart", (event) =>
+        this.startDrawingTouch(event, scaleX, scaleY)
+      );
+      this.$refs.canvas.addEventListener("touchmove", (event) =>
+        this.drawTouch(event, scaleX, scaleY)
+      );
     },
     startDrawing(event) {
       this.drawing = true;
@@ -75,8 +79,12 @@ export default {
       event.preventDefault();
       const touch = event.touches[0];
       this.drawing = true;
-      this.lastX = (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) * scaleX;
-      this.lastY = (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY;
+      this.lastX =
+        (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) *
+        scaleX;
+      this.lastY =
+        (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) *
+        scaleY;
     },
     drawTouch(event, scaleX, scaleY) {
       // Handle touch move event
@@ -91,13 +99,18 @@ export default {
       this.ctx.beginPath();
       this.ctx.moveTo(this.lastX, this.lastY);
       this.ctx.lineTo(
-        (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) * scaleX,
+        (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) *
+          scaleX,
         (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY
       );
       this.ctx.stroke();
 
-      this.lastX = (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) * scaleX;
-      this.lastY = (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY;
+      this.lastX =
+        (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) *
+        scaleX;
+      this.lastY =
+        (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) *
+        scaleY;
     },
     draw(event) {
       if (!this.drawing) return;
