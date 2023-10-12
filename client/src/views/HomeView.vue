@@ -2,8 +2,6 @@
   <div class="page">
     <canvas
       ref="canvas"
-      height="600"
-      width="600"
       @mousedown="startDrawing"
       @mousemove="draw"
       @mouseup="stopDrawing"
