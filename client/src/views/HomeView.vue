@@ -60,8 +60,10 @@ export default {
       event.preventDefault();
       const touch = event.touches[0];
       this.drawing = true;
-      this.lastX = touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
-      this.lastY = touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+      this.lastX =
+        touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
+      this.lastY =
+        touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
     },
     drawTouch(event) {
       // Handle touch move event
@@ -72,7 +74,7 @@ export default {
       this.ctx.lineWidth = 40;
       this.ctx.lineJoin = "round";
       this.ctx.lineCap = "round";
-      
+
       this.ctx.beginPath();
       this.ctx.moveTo(this.lastX, this.lastY);
       this.ctx.lineTo(
@@ -80,9 +82,11 @@ export default {
         touch.clientY - this.$refs.canvas.getBoundingClientRect().top
       );
       this.ctx.stroke();
-      
-      this.lastX = touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
-      this.lastY = touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+
+      this.lastX =
+        touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
+      this.lastY =
+        touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
     },
     draw(event) {
       if (!this.drawing) return;
