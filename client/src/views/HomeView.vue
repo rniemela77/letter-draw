@@ -8,6 +8,9 @@
       @mousemove="draw"
       @mouseup="stopDrawing"
       @mouseleave="stopDrawing"
+      @touchstart="startDrawingTouch"
+      @touchmove="drawTouch"
+      @touchend="stopDrawing"
     ></canvas>
     <div>
       <button @click="clearCanvas">Clear</button>
@@ -53,6 +56,35 @@ export default {
       this.drawing = true;
       this.lastX = event.offsetX;
       this.lastY = event.offsetY;
+    },
+    startDrawingTouch(event) {
+      // Handle touch start event
+      event.preventDefault();
+      const touch = event.touches[0];
+      this.drawing = true;
+      this.lastX = touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
+      this.lastY = touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+    },
+    drawTouch(event) {
+      // Handle touch move event
+      event.preventDefault();
+      if (!this.drawing) return;
+      const touch = event.touches[0];
+      this.ctx.strokeStyle = "black";
+      this.ctx.lineWidth = 40;
+      this.ctx.lineJoin = "round";
+      this.ctx.lineCap = "round";
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.lineTo(
+        touch.clientX - this.$refs.canvas.getBoundingClientRect().left,
+        touch.clientY - this.$refs.canvas.getBoundingClientRect().top
+      );
+      this.ctx.stroke();
+      
+      this.lastX = touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
+      this.lastY = touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
     },
     draw(event) {
       if (!this.drawing) return;
