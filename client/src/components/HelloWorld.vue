@@ -42,30 +42,43 @@ export default {
       lastY: 0,
       ctx: null,
       savedDrawing: null,
-      saveLocations: [], // Array to store saved drawings
-      selectedSaveLocation: null, // Currently selected save location
+      saveLocations: [],
+      selectedSaveLocation: null,
+      canvasWidth: 800, // Initial canvas width
+      canvasHeight: 600, // Initial canvas height
     };
   },
   mounted() {
     this.ctx = this.$refs.canvas.getContext("2d");
+    this.setCanvasSize(); // Initialize canvas size
   },
   methods: {
+    setCanvasSize() {
+      // Set the canvas size
+      this.$refs.canvas.width = this.canvasWidth;
+      this.$refs.canvas.height = this.canvasHeight;
+
+      // Calculate scaling factors for touch events
+      const scaleX = this.$refs.canvas.width / this.$refs.canvas.offsetWidth;
+      const scaleY = this.$refs.canvas.height / this.$refs.canvas.offsetHeight;
+
+      this.$refs.canvas.addEventListener("touchstart", (event) => this.startDrawingTouch(event, scaleX, scaleY));
+      this.$refs.canvas.addEventListener("touchmove", (event) => this.drawTouch(event, scaleX, scaleY));
+    },
     startDrawing(event) {
       this.drawing = true;
       this.lastX = event.offsetX;
       this.lastY = event.offsetY;
     },
-    startDrawingTouch(event) {
+    startDrawingTouch(event, scaleX, scaleY) {
       // Handle touch start event
       event.preventDefault();
       const touch = event.touches[0];
       this.drawing = true;
-      this.lastX =
-        touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
-      this.lastY =
-        touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+      this.lastX = (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) * scaleX;
+      this.lastY = (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY;
     },
-    drawTouch(event) {
+    drawTouch(event, scaleX, scaleY) {
       // Handle touch move event
       event.preventDefault();
       if (!this.drawing) return;
@@ -78,15 +91,13 @@ export default {
       this.ctx.beginPath();
       this.ctx.moveTo(this.lastX, this.lastY);
       this.ctx.lineTo(
-        touch.clientX - this.$refs.canvas.getBoundingClientRect().left,
-        touch.clientY - this.$refs.canvas.getBoundingClientRect().top
+        (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) * scaleX,
+        (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY
       );
       this.ctx.stroke();
 
-      this.lastX =
-        touch.clientX - this.$refs.canvas.getBoundingClientRect().left;
-      this.lastY =
-        touch.clientY - this.$refs.canvas.getBoundingClientRect().top;
+      this.lastX = (touch.clientX - this.$refs.canvas.getBoundingClientRect().left) * scaleX;
+      this.lastY = (touch.clientY - this.$refs.canvas.getBoundingClientRect().top) * scaleY;
     },
     draw(event) {
       if (!this.drawing) return;

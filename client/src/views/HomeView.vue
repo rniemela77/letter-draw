@@ -1,7 +1,6 @@
 <template>
   <div class="page">
     <HelloWorld />
-    <HelloWorld />
   </div>
 </template>
 
